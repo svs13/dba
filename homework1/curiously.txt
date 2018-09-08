@@ -13,6 +13,65 @@
     sqlite3 c:/openserver/dba1.sqlite
     sqlite> .help
 
+Документация
+============
+    https://dev.mysql.com/doc/refman/5.7/en/data-types.html
+    http://www.postgresql.org/docs/9.6/interactive/datatype.html
+    https://www.sqlite.org/datatype3.html
+    http://www.mysql.ru/docs/man/Column_types.html
+    http://postgresql.ru.net/manual/datatype.html
+    http://xbb.uz/db/Tipy-dannyh-v-SQLite-versii-3
+    
+Типы данных
+===========
++-----------------------+------------------------+-------+
+|MySQL                  |PostgreSQL              |SQLite |
++-----------------------+------------------------+-------+
+|                       |                        | NULL  |
++-----------------------+------------------------+-------+
+|TINYINT[(M)]           |pg_lsn                  |       |
+|SMALLINT[(M)]          |smallint                |       |
+|MEDIUMINT[(M)]         |integer                 |INTEGER|
+|INT[(M)]               |bigint                  |       |
+|INTEGER[(M)]           |smallserial             |       |
+|BIGINT[(M)]            |serial                  |       |
+|                       |bigserial               |       |
++-----------------------+------------------------+-------+
+|FLOAT(точность)        |                        |       |
+|FLOAT[(M,D)]           |                        |       |
+|DOUBLE[(M,D)]          |                        |       |
+|DOUBLE PRECISION[(M,D)]|double precision        |       |
+|REAL- тоже что и DOUBLE|real                    | REAL  |
++-----------------------+------------------------+       |
+|DECIMAL[(M[,D])]       |numeric [ (p, s) ]      |       |
+|DEC NUMERIC = DECIMAL  |money                   |       |
++-----------------------+------------------------+-------+
+|DATE                   |date                    |       |
+|DATETIME               |time [(p)] [without time|       |
+|TIMESTAMP[(M)]         |time [(p)] with time zon|       |
+|TIME                   |timestamp [(p)] [without|       |
+|YEAR[(2|4)]            |timestamp [(p)] with tim|       |
+|                       |interval [fields] [(p)] |       |
++-----------------------+------------------------+       |
+|BIT,BOOL (TINYINT(1))  |bit [ (n) ]             |       |
+|                       |bit varying [ (n) ]     |       |
+|                       |boolean                 |       |
++-----------------------+------------------------+       |
+|[NAT] CHAR(M) [BIN]    |xml                     |       |
+|CHAR                   |tsquery,tsvector        |       |
+|[NAT] VARCHAR(M) [BIN] |character [ (n) ]       |       |
+|TINYBLOB               |character varying [(n)] |       |
+|TINYTEXT               |bytea                   |       |
+|BLOB                   |box                     | BLOB  |
+|TEXT                   |text                    | TEXT  |
+|LONGBLOB               |json,jsonb              |       |
+|LONGTEXT               |cidr,inet,macaddr       |       |
+|ENUM('зн1','зн2',...)  |circle,line,lseg,path,  |       |
+|SET('зн1','зн2',...)   |point,polygon           |       |
+|                       |txid_snapshot           |       |
+|                       |uuid                    |       |
++-----------------------+------------------------+-------+
+
 Исследование SERIAL
 ===================
 
