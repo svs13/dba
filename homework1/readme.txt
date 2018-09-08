@@ -31,7 +31,7 @@
 #### PostgreSQL
     CREATE TABLE "books" ("id" SERIAL, "title" VARCHAR(100), "year" SMALLINT, "author" VARCHAR(100), "price" DECIMAL(8,2));
 #### SQLite
-    CREATE TABLE `books` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` VARCHAR(100), `year` SMALLINT, `author` VARCHAR(100), `price` DECIMAL(8,2));
+    CREATE TABLE `books` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` TEXT, `year` INTEGER, `author` TEXT, `price` REAL);
 
 ## 1.3 Таблица publishers, содержащая информацию об издательствах. 
 ## Поля - на ваш вкус, за исключением серийного номера.
@@ -41,7 +41,7 @@
 #### PostgreSQL
     CREATE TABLE "publishers" ("id" SERIAL, "name" VARCHAR(50), "full_name" VARCHAR(100), "city" VARCHAR(50), "isbn" VARCHAR(30));
 #### SQLite
-    CREATE TABLE `publishers` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` VARCHAR(50), `full_name` VARCHAR(100), `city` VARCHAR(50), `isbn` VARCHAR(30));
+    CREATE TABLE `publishers` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT, `full_name` TEXT, `city` TEXT, `isbn` TEXT);
 
 ## 2 Наполните таблицы произвольными данными.
 
