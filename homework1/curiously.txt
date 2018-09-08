@@ -1,24 +1,24 @@
 Подключение к базе данных через консоль:
 ========================================
 ### MySQL
-	mysql --user=root --password=
-	mysql> use dba1
+    mysql --user=root --password=
+    mysql> use dba1
 ### PostgreSQL
-	psql -U postgres
-	postgres=# \c dba1
+    psql -U postgres
+    postgres=# \c dba1
 ### SQLite
 Консоль не работает, не находит sqlite3.exe
 скачал с https://www.sqlite.org/download.html sqlite-tools-win32-x86-3240000.zip
 в нём sqlite3.exe скопировал в c:\openserver\ospanel\ 
-	sqlite3 c:/openserver/dba1.sqlite
-	sqlite> .help
+    sqlite3 c:/openserver/dba1.sqlite
+    sqlite> .help
 
 Исследование SERIAL
 ===================
 
 ### MySQL
-	CREATE TABLE `serial` (`id` SERIAL, `text` TEXT);
-	EXPLAIN `serial`;
+    CREATE TABLE `serial` (`id` SERIAL, `text` TEXT);
+    EXPLAIN `serial`;
 +-------+---------------------+------+-----+---------+----------------+
 | Field | Type                | Null | Key | Default | Extra          |
 +-------+---------------------+------+-----+---------+----------------+
@@ -46,14 +46,14 @@
 
 
 ### PostgreSQL
-	CREATE TABLE "serial" ("id" SERIAL, "text" TEXT);
-	SELECT column_name, data_type, column_default, is_nullable FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = 'serial' AND column_name = 'id';
+    CREATE TABLE "serial" ("id" SERIAL, "text" TEXT);
+    SELECT column_name, data_type, column_default, is_nullable FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = 'serial' AND column_name = 'id';
 
  column_name | data_type |           column_default           | is_nullable
 -------------+-----------+------------------------------------+-------------
- id          | integer   | nextval('serial_id_seq'::regclass) | NO	
+ id          | integer   | nextval('serial_id_seq'::regclass) | NO    
 
-из документации: тип SERIAL - это числовой тип: serial	4 bytes	autoincrementing integer	1 to 2147483647
+из документации: тип SERIAL - это числовой тип: serial    4 bytes    autoincrementing integer    1 to 2147483647
 т.е. это тип:
 - без знака
 - от 1 до 2147483647
@@ -73,26 +73,26 @@
 
 
 ### SQLite
-	CREATE TABLE `serial` (`id` SERIAL, `text` TEXT);
-	pragma table_info(serial);
-	0|id|SERIAL|0||0
-	1|text|TEXT|0||0
+    CREATE TABLE `serial` (`id` SERIAL, `text` TEXT);
+    pragma table_info(serial);
+    0|id|SERIAL|0||0
+    1|text|TEXT|0||0
 Очень интересно. В ответе пишет SERIAL. И DataGrip тоже пишет type-SERIAL.
-	SELECT `id`, typeof(`id`), `text`, typeof(`text`) FROM `serial`;
-	|null|1|text
-	|null|2|text
-	|null|3|text
-	|null|5|text
-	1|integer|2|text
-	1|integer|2|text
-	-1|integer|2|text
-	aaa|text|2|text
-	4.56546546546547e+36|real|2|text
-	1.23456789012346e+28|real|2|text
+    SELECT `id`, typeof(`id`), `text`, typeof(`text`) FROM `serial`;
+    |null|1|text
+    |null|2|text
+    |null|3|text
+    |null|5|text
+    1|integer|2|text
+    1|integer|2|text
+    -1|integer|2|text
+    aaa|text|2|text
+    4.56546546546547e+36|real|2|text
+    1.23456789012346e+28|real|2|text
 Типа SERIAL не существует.
-	CREATE TABLE `serial` (`id` INTEGER PRIMARY KEY, `text` TEXT);
-	0|id|INTEGER|0||1
-	1|text|TEXT|0||0
+    CREATE TABLE `serial` (`id` INTEGER PRIMARY KEY, `text` TEXT);
+    0|id|INTEGER|0||1
+    1|text|TEXT|0||0
 чтобы реализовать автоинкремент достаточно задать INTEGER PRIMARY KEY
 Поведение типа INTEGER PRIMARY KEY в БД:
 - при явном задании значения - записывает в базу то что задал
