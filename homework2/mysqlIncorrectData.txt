@@ -1,0 +1,59 @@
+MySQL. Эксперименты со вставкой некорректных данных
+---------------------------------------------------
+
+Вставка отрицательной цены
+--------------------------
+    INSERT INTO `products` (`name`, `vendor_code`, `image`, `price`, `sale_date`, `quantity`)
+        VALUES ('Название 5', '55555', 'image 5.jpg', '-100.00', '2018-10-15', 42);
+        
+### Реакция базы данных
+Ошибка [22001][1264] Data truncation: Out of range value for column 'price' at row 1
+Ошибка, т.к. тип поля price задан беззнаковым (UNSIGNED): `price` DECIMAL(8,2) UNSIGNED
+
+Вставка кол-ва на складе меньше нуля
+------------------------------------
+    INSERT INTO `products` (`name`, `vendor_code`, `image`, `price`, `sale_date`, `quantity`)
+        VALUES ('Название 6', '666666', 'image 6.jpg', '100.00', '2018-10-15', -1);
+        
+### Реакция базы данных
+Ошибка [22001][1264] Data truncation: Out of range value for column 'quantity' at row 1
+Ошибка, т.к. тип поля quantity задан беззнаковым (UNSIGNED): `quantity` INT UNSIGNED
+
+Вставка пустого артикула (NULL)
+-------------------------------
+    INSERT INTO `products` (`name`, `vendor_code`, `image`, `price`, `sale_date`, `quantity`)
+        VALUES ('Название 7', NULL, 'image 7.jpg', '100.00', '2018-10-15', 42);
+    SELECT * FROM `products`;
+    
+### Реакция базы данных
+Без ошибок. Не порядок.
+
+Пробую задать модификатор NOT NULL, не удаляя запись
+----------------------------------------------------
+    ALTER TABLE `products` MODIFY `vendor_code` CHAR(9) NOT NULL;
+    
+### Реакция базы данных
+Ошибка [22001][1138] Data truncation: Invalid use of NULL value
+Ожидаемо.
+
+Удаляю запись и снова пробую задать NOT NULL
+--------------------------------------------
+    DELETE FROM `products` WHERE `vendor_code` IS NULL;
+    ALTER TABLE `products` MODIFY `vendor_code` CHAR(9) NOT NULL;
+    INSERT INTO `products` (`name`, `vendor_code`, `image`, `price`, `sale_date`, `quantity`)
+        VALUES ('Название 7', NULL, 'image 7.jpg', '100.00', '2018-10-15', 42);
+    
+### Реакция базы данных
+Ошибка [23000][1048] Column 'vendor_code' cannot be null
+Ошибка, т.к. тип поля vendor_code задан не NULL
+
+Пробую вставить артикул в виде пустой строки '' ( ` '' IS NULL ` возвратит 0 , т.е. false )
+-------------------------------------------------------------------------------------------
+    INSERT INTO `products` (`name`, `vendor_code`, `image`, `price`, `sale_date`, `quantity`)
+        VALUES ('Название 7', '', 'image 7.jpg', '100.00', '2018-10-15', 42);
+    SELECT * FROM `products`;
+        
+### Реакция базы данных
+Ошибок нет. Ожидаемо. 
+А вот как ввести ограничение на '' - модификатора вроде нет, CHECK игнорируется, взамен предлагают использовать триггеры. А что это такое - ещё не знаю.
+Думаю, в следующих уроках узнаю =)

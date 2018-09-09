@@ -1,0 +1,77 @@
+PostgreSQL. Эксперименты со вставкой некорректных данных
+--------------------------------------------------------
+
+Вставка отрицательной цены
+--------------------------
+    INSERT INTO "products" ("name", "vendor_code", "image", "price", "sale_date", "quantity")
+        VALUES ('Название 5', '55555', 'image 5.jpg', '-100.00', '2018-10-15', 42);
+        
+### Реакция базы данных
+Ошибка [23514] ERROR: new row for relation "products" violates check constraint "products_price_check" 
+Подробности: Failing row contains (5, Название 5, 55555 , image 5.jpg, -100.00, 2018-10-15, 42).
+Ошибка, т.к. тип поля price хоть и со знаком, но задано ограничение значения (>0): "price" NUMERIC(8,2) CHECK ("price" >= 0),
+
+Вставка кол-ва на складе меньше нуля
+------------------------------------
+    INSERT INTO "products" ("name", "vendor_code", "image", "price", "sale_date", "quantity")
+        VALUES ('Название 6', '666666', 'image 6.jpg', '100.00', '2018-10-15', -1);
+        
+### Реакция базы данных
+Ошибка [23514] ERROR: new row for relation "products" violates check constraint "products_quantity_check" 
+Подробности: Failing row contains (6, Название 6, 666666 , image 6.jpg, 100.00, 2018-10-15, -1).
+Ошибка, т.к. тип поля quantity хоть и со знаком, но задано ограничение значения (>0): "quantity" INTEGER CHECK ("quantity" >= 0)
+
+Вставка пустого артикула (NULL)
+-------------------------------
+    INSERT INTO "products" ("name", "vendor_code", "image", "price", "sale_date", "quantity")
+        VALUES ('Название 7', NULL, 'image 7.jpg', '100.00', '2018-10-15', 42);
+    SELECT * FROM "products";
+    
+### Реакция базы данных
+Без ошибок. Не порядок.
+
+Пробую задать модификатор NOT NULL, не удаляя запись
+----------------------------------------------------
+    писал в mysql: ALTER TABLE "products" MODIFY "vendor_code" CHAR(9) NOT NULL; но здесь не знает MODIFY
+    ALTER TABLE "public"."products" ALTER COLUMN "vendor_code" SET NOT NULL;
+    
+### Реакция базы данных
+Ошибка [23502] ERROR: column "vendor_code" contains null values
+Ожидаемо.
+
+Удаляю запись и снова пробую задать NOT NULL
+--------------------------------------------
+    DELETE FROM "products" WHERE "vendor_code" IS NULL;
+    ALTER TABLE "public"."products" ALTER COLUMN "vendor_code" SET NOT NULL;
+    INSERT INTO "products" ("name", "vendor_code", "image", "price", "sale_date", "quantity")
+        VALUES ('Название 7', NULL, 'image 7.jpg', '100.00', '2018-10-15', 42);
+    
+### Реакция базы данных
+Ошибка [23000][1048] Column 'vendor_code' cannot be null
+Ошибка, т.к. тип поля vendor_code задан не NULL
+
+Пробую вставить артикул в виде пустой строки '' ( " '' IS NULL " возвратит 0 , т.е. false )
+-------------------------------------------------------------------------------------------
+    INSERT INTO "products" ("name", "vendor_code", "image", "price", "sale_date", "quantity")
+        VALUES ('Название 7', '', 'image 7.jpg', '100.00', '2018-10-15', 42);
+    SELECT * FROM "products";
+        
+### Реакция базы данных
+Ошибок нет. Ожидаемо. 
+
+Модифицирую тип поля, добавляю ограничение на пустую строку CHECK ("vendor_code" != '')
+---------------------------------------------------------------------------------------
+    ALTER TABLE "public"."products" ALTER COLUMN "vendor_code" SET CHECK ("vendor_code" != '');
+### Реакция базы данных
+Ошибка. Ожидаемо. [23514] ERROR: check constraint "products_vendor_code_check" is violated by some row
+    DELETE FROM "products" WHERE "vendor_code" = '';
+    ALTER TABLE "public"."products" ALTER COLUMN "vendor_code" SET CHECK ("vendor_code" != '');
+    INSERT INTO "products" ("name", "vendor_code", "image", "price", "sale_date", "quantity")
+        VALUES ('Название 7', '', 'image 7.jpg', '100.00', '2018-10-15', 42);
+### Реакция базы данных
+Ошибка [23514] ERROR: new row for relation "products" violates check constraint "products_vendor_code_check" 
+Подробности: Failing row contains (10, Название 7, , image 7.jpg, 100.00, 2018-10-15, 42).
+Ошибка, т.к. для типа поля vendor_code задано ограничение CHECK ("vendor_code" != '')
+
+Интерес всё больше!
+

@@ -1,0 +1,67 @@
+SQLite. Эксперименты со вставкой некорректных данных
+----------------------------------------------------
+
+Вставка отрицательной цены
+--------------------------
+    INSERT INTO `products` (`name`, `vendor_code`, `image`, `price`, `sale_date`, `quantity`)
+        VALUES ('Название 5', '55555', 'image 5.jpg', '-100.00', '2018-10-15', 42);
+        
+### Реакция базы данных
+Ошибка [19] [SQLITE_CONSTRAINT_CHECK] A CHECK constraint failed (CHECK constraint failed: products)
+Ошибка, т.к. тип поля price хоть и имеет знак, но задано ограничение: `price` REAL CHECK ("price" >= 0),
+
+Вставка кол-ва на складе меньше нуля
+------------------------------------
+    INSERT INTO `products` (`name`, `vendor_code`, `image`, `price`, `sale_date`, `quantity`)
+        VALUES ('Название 6', '666666', 'image 6.jpg', '100.00', '2018-10-15', -1);
+        
+### Реакция базы данных
+Ошибка [19] [SQLITE_CONSTRAINT_CHECK] A CHECK constraint failed (CHECK constraint failed: products)
+Ошибка, т.к. тип поля quantity хоть и имеет знак, но задано ограничение: `quantity` INTEGER CHECK (`quantity` >= 0)
+
+Вставка пустого артикула (NULL)
+-------------------------------
+    INSERT INTO `products` (`name`, `vendor_code`, `image`, `price`, `sale_date`, `quantity`)
+        VALUES ('Название 7', NULL, 'image 7.jpg', '100.00', '2018-10-15', 42);
+    SELECT * FROM `products`;
+    
+### Реакция базы данных
+Без ошибок. Не порядок.
+
+Пробую задать модификатор NOT NULL
+----------------------------------------------------
+!!!! ПЕЧАЛЬКА. нельзя изменять NOT NULL уже созданной таблицы, тоже и с CHECK. Ужас.
+дропаю таблицу. И через ide DataGrip тоже нельзя. Да. Вот это подстава =).
+так. а если создать столбец в конце и дропнуть старый. БЕДА! и тут ЗАСАДА! Нельзя дропать столбцы!
+Ясно один выход - создать новую таблицу. Скопировать данные из предыдущей. Дропнуть старую. Переименовать новую.
+    
+Просто пересоздаю таблицу с нужными ограничениями  `vendor_code` TEXT UNIQUE NOT NULL CHECK (`vendor_code` != ''),
+-------------------------------------------------
+    DROP TABLE `products`;
+    выполняю disconnect
+    CREATE TABLE `products` (
+      `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+      `name` TEXT,
+      `vendor_code` TEXT UNIQUE NOT NULL CHECK (`vendor_code` != ''),
+      `image` TEXT,
+      `price` REAL CHECK (`price` >= 0),
+      `sale_date` TEXT,
+      `quantity` INTEGER CHECK (`quantity` >= 0)
+    );
+    INSERT INTO `products` (`name`, `vendor_code`, `image`, `price`, `sale_date`, `quantity`)
+        VALUES ('Название 7', NULL, 'image 7.jpg', '100.00', '2018-10-15', 42);    
+
+### Реакция базы данных
+Ошибка [19] [SQLITE_CONSTRAINT_NOTNULL] A NOT NULL constraint failed (NOT NULL constraint failed: products.vendor_code)
+Ошибка т.к. поле vendor_code задано NOT NULL
+
+Пробую вставить артикул в виде пустой строки ''
+-------------------------------------------------------------------------------------------
+    INSERT INTO `products` (`name`, `vendor_code`, `image`, `price`, `sale_date`, `quantity`)
+        VALUES ('Название 7', '', 'image 7.jpg', '100.00', '2018-10-15', 42);
+        
+### Реакция базы данных
+Ошибка [19] [SQLITE_CONSTRAINT_CHECK] A CHECK constraint failed (CHECK constraint failed: products)
+Ошибка, т.к. поле vendor_code задано с ограничением CHECK (`vendor_code` != '')
+
+Вот такие тонкости =)
